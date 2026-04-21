@@ -6,14 +6,12 @@ from ultralytics import YOLO
 app = Flask(__name__)
 
 UPLOAD_FOLDER = "uploads"
-OUTPUT_FOLDER = "outputs"
+OUTPUT_FOLDER = "static"
 EVIDENCE_FOLDER = "evidence"
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 os.makedirs(EVIDENCE_FOLDER, exist_ok=True)
-
-app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 model = YOLO("yolov8n.pt")
 
@@ -30,7 +28,7 @@ def process_video(input_path, output_path):
     if fps == 0:
         fps = 25
 
-    fourcc = cv2.VideoWriter_fourcc(*'XVID')
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
 
     frame_count = 0
@@ -48,7 +46,6 @@ def process_video(input_path, output_path):
 
         frame_count += 1
 
-        # Signal changes automatically
         signal_red = (frame_count // 100) % 2 == 0
         signal_text = "RED" if signal_red else "GREEN"
 
@@ -66,21 +63,14 @@ def process_video(input_path, output_path):
                 cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
                 cv2.putText(
-                    frame,
-                    name,
-                    (x1, y1 - 10),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.6,
-                    (255, 255, 255),
-                    2
+                    frame, name, (x1, y1 - 10),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6,
+                    (255, 255, 255), 2
                 )
 
                 center_y = (y1 + y2) // 2
-
-                # rough vehicle tracking id
                 vehicle_id = (x1 // 60, y1 // 60)
 
-                # check crossing only once
                 if vehicle_id in previous_pos:
 
                     prev_y = previous_pos[vehicle_id]
@@ -96,13 +86,10 @@ def process_video(input_path, output_path):
                         violations += 1
 
                         cv2.putText(
-                            frame,
-                            "VIOLATION!",
+                            frame, "VIOLATION!",
                             (x1, y2 + 20),
                             cv2.FONT_HERSHEY_SIMPLEX,
-                            0.7,
-                            (0, 0, 255),
-                            2
+                            0.7, (0, 0, 255), 2
                         )
 
                         cv2.imwrite(
@@ -112,43 +99,31 @@ def process_video(input_path, output_path):
 
                 previous_pos[vehicle_id] = center_y
 
-        # Stop line
-        cv2.line(
-            frame,
-            (0, stop_line_y),
-            (width, stop_line_y),
-            (0, 0, 255),
-            3
-        )
+        # stop line
+        cv2.line(frame, (0, stop_line_y), (width, stop_line_y), (0, 0, 255), 3)
 
-        # Signal display
+        # signal
         color = (0, 0, 255) if signal_red else (0, 255, 0)
 
         cv2.putText(
-            frame,
-            signal_text,
-            (30, 50),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            1,
-            color,
-            3
+            frame, signal_text, (30, 50),
+            cv2.FONT_HERSHEY_SIMPLEX, 1,
+            color, 3
         )
 
-        # Violation count
+        # count
         cv2.putText(
-            frame,
-            f"Violations: {violations}",
+            frame, f"Violations: {violations}",
             (30, 90),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            0.8,
-            (255, 255, 0),
-            2
+            cv2.FONT_HERSHEY_SIMPLEX, 0.8,
+            (255, 255, 0), 2
         )
 
         out.write(frame)
 
     cap.release()
     out.release()
+
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -159,14 +134,14 @@ def index():
 
         if file:
 
-            # clear old evidence images
+            # clear old screenshots
             for img in os.listdir(EVIDENCE_FOLDER):
                 os.remove(os.path.join(EVIDENCE_FOLDER, img))
 
             path = os.path.join(UPLOAD_FOLDER, file.filename)
             file.save(path)
 
-            output_path = os.path.join(OUTPUT_FOLDER, "result.avi")
+            output_path = os.path.join(OUTPUT_FOLDER, "result.mp4")
 
             process_video(path, output_path)
 
@@ -179,10 +154,6 @@ def index():
             )
 
     return render_template("index.html", done=False, images=[])
-
-@app.route("/outputs/<filename>")
-def output_file(filename):
-    return send_from_directory("outputs", filename)
 
 
 @app.route("/evidence/<filename>")
