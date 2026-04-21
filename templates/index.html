@@ -36,12 +36,24 @@
 
 <br><br><br>
 
-<h2>📸 Violation Evidence</h2>
+<h2>📸 Violation Evidence & Plate Preview</h2>
 
 <div class="gallery">
-{% for img in images %}
-    <img src="{{ url_for('evidence_file', filename=img) }}" width="280">
+
+{% for item in plates %}
+<div class="card">
+
+    <img src="{{ url_for('evidence_file', filename=item[0]) }}" width="280">
+
+    <br><br>
+
+    <img src="{{ url_for('evidence_file', filename=item[1]) }}" width="180">
+
+    <p><b>Plate Text:</b> {{ item[2] }}</p>
+
+</div>
 {% endfor %}
+
 </div>
 
 </div>

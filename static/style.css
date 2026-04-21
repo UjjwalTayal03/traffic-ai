@@ -59,3 +59,28 @@ video{
     border-radius:15px;
     box-shadow:0 0 20px rgba(255,255,255,0.2);
 }
+
+.gallery{
+    display:flex;
+    flex-wrap:wrap;
+    gap:20px;
+    justify-content:center;
+    margin-top:20px;
+}
+
+.card{
+    background:#1e293b;
+    padding:15px;
+    border-radius:14px;
+    box-shadow:0 0 15px rgba(0,0,0,0.35);
+    width:320px;
+}
+
+.card img{
+    border-radius:10px;
+}
+
+.card p{
+    margin-top:10px;
+    color:white;
+}
