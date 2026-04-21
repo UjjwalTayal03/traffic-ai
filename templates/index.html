@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Traffic Rule Violation Detection</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+<div class="container">
+    
+    <h1>🚦 Real-Time Traffic Rule Violation Detection</h1>
+    <p>Upload CCTV / traffic video for AI-based violation analysis</p>
+
+    <form method="POST" enctype="multipart/form-data">
+        <input type="file" name="video" required>
+        <button type="submit">Process Video</button>
+    </form>
+
+{% if done %}
+<div class="result">
+
+    <h2>Processing Complete ✅</h2>
+
+    <video width="800" controls>
+        <source src="{{ url_for('output_file', filename='result.avi') }}">
+    </video>
+
+    <br><br>
+
+    <a href="{{ url_for('output_file', filename='result.avi') }}" download>
+        <button>Download Result</button>
+    </a>
+
+    <br><br><br>
+
+    <h2>📸 Violation Evidence</h2>
+
+    <div class="gallery">
+        {% for img in images %}
+            <img src="{{ url_for('evidence_file', filename=img) }}" width="280">
+        {% endfor %}
+    </div>
+
+</div>
+{% endif %}
+
+</div>
+
+</body>
+</html>
