@@ -3,63 +3,130 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Traffic Rule Violation Detection</title>
+<title>Traffic Sentinel</title>
 <link rel="stylesheet" href="/static/style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
 
-<div class="container">
+<nav class="navbar">
+    <div class="logo">🚦 Traffic Sentinel</div>
+    <ul>
+        <li><a href="#home">Home</a></li>
+        <li><a href="#upload">Upload</a></li>
+        <li><a href="#results">Results</a></li>
+        <li><a href="#about">About</a></li>
+    </ul>
+</nav>
 
-<h1>🚦 Real-Time Traffic Rule Violation Detection</h1>
-<p>Upload CCTV / traffic video for AI-based violation analysis</p>
+<section class="hero" id="home">
+    <h1>AI Powered Traffic Violation Detection</h1>
+    <p>Smart surveillance system for detecting traffic violations, evidence capture and plate extraction.</p>
+</section>
 
-<form method="POST" enctype="multipart/form-data">
+<section class="upload-section" id="upload">
+
+<form method="POST" enctype="multipart/form-data" onsubmit="showLoader()">
     <input type="file" name="video" required>
-    <button type="submit">Process Video</button>
+    <button type="submit">Upload & Process</button>
 </form>
 
+<div class="loader" id="loader">
+    <div class="spinner"></div>
+    <p>Analyzing Traffic Footage...</p>
+</div>
+
+</section>
+
 {% if done %}
-<div class="result">
+<section class="results" id="results">
 
 <h2>Processing Complete ✅</h2>
 
-<video width="800" controls autoplay>
+<div class="video-box">
+<video controls muted preload="metadata">
     <source src="/static/result.mp4?v={{ range(1,9999)|random }}" type="video/mp4">
 </video>
-
-<br><br>
+</div>
 
 <a href="/static/result.mp4" download>
-    <button>Download Result</button>
+<button class="download-btn">Download Result</button>
 </a>
 
-<br><br><br>
-
-<h2>📸 Violation Evidence & Plate Preview</h2>
+<h2 class="evidence-title">Violation Evidence & Plate Preview</h2>
 
 <div class="gallery">
 
 {% for item in plates %}
 <div class="card">
 
-    <img src="{{ url_for('evidence_file', filename=item[0]) }}" width="280">
+<img src="{{ url_for('evidence_file', filename=item[0]) }}" class="zoomable">
 
-    <br><br>
+<img src="{{ url_for('evidence_file', filename=item[1]) }}" class="plate-img zoomable">
 
-    <img src="{{ url_for('evidence_file', filename=item[1]) }}" width="180">
-
-    <p><b>Plate Text:</b> {{ item[2] }}</p>
+<p>
+<b>Plate Status:</b>
+{% if item[2] == "Not Detected" %}
+OCR Enhancement Pending
+{% else %}
+{{ item[2] }}
+{% endif %}
+</p>
 
 </div>
 {% endfor %}
 
 </div>
-
-</div>
+</section>
 {% endif %}
 
+<section class="about" id="about">
+<h2>About Project</h2>
+<p>
+Traffic Sentinel uses Deep Learning and Computer Vision to identify rule violations,
+track vehicles, capture evidence frames and assist in smart traffic monitoring.
+</p>
+</section>
+
+<footer>
+<p>Made by Ujjwal Tayal, Yash Raj, Unnati Negi, Tushar Kumar</p>
+<p>NIET | BTech CSE (AIML)</p>
+</footer>
+
+<div class="modal" id="imgModal">
+<span class="close" onclick="closeModal()">&times;</span>
+<img class="modal-content" id="modalImg">
 </div>
+
+<script>
+function showLoader(){
+    document.getElementById("loader").style.display="flex";
+}
+
+const images=document.querySelectorAll(".zoomable");
+const modal=document.getElementById("imgModal");
+const modalImg=document.getElementById("modalImg");
+
+images.forEach(img=>{
+    img.addEventListener("click",()=>{
+        modal.style.display="flex";
+        modalImg.src=img.src;
+    });
+});
+
+function closeModal(){
+    modal.style.display="none";
+}
+
+window.onclick=function(e){
+    if(e.target==modal){
+        modal.style.display="none";
+    }
+}
+</script>
 
 </body>
 </html>
